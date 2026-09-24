@@ -43,6 +43,75 @@ PRAKTIKUM/
 └── .env
 ```
 
+## Download dan instalasi Docker
+
+Project ini dijalankan dengan **Docker Desktop** (berisi Docker Engine + Docker Compose). Install dulu sebelum menjalankan praktikum.
+
+### Windows
+
+1. Pastikan Windows 10/11 64-bit dan **WSL 2** sudah aktif.
+2. Unduh installer dari: https://docs.docker.com/desktop/setup/install/windows-install/
+3. Jalankan `Docker Desktop Installer.exe`, ikuti wizard instalasi.
+4. Restart komputer jika diminta, lalu buka **Docker Desktop**.
+5. Tunggu sampai status Docker **Running** (ikon paus di system tray).
+6. Verifikasi di PowerShell / Command Prompt:
+
+```bash
+docker --version
+docker compose version
+```
+
+### macOS
+
+1. Unduh Docker Desktop sesuai chip Mac Anda:
+   - Apple Silicon (M1/M2/M3/M4): https://docs.docker.com/desktop/setup/install/mac-install/
+   - Intel: pilih versi Intel di halaman yang sama
+2. Buka file `.dmg`, seret **Docker** ke folder Applications.
+3. Buka Docker dari Applications, izinkan jika diminta macOS.
+4. Tunggu sampai status Docker **Running** di menu bar.
+5. Verifikasi di Terminal:
+
+```bash
+docker --version
+docker compose version
+```
+
+### Linux (Ubuntu/Debian)
+
+1. Ikuti panduan resmi: https://docs.docker.com/engine/install/ubuntu/
+2. Ringkas (contoh Ubuntu):
+
+```bash
+sudo apt update
+sudo apt install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+3. Agar bisa menjalankan Docker tanpa `sudo` (opsional):
+
+```bash
+sudo usermod -aG docker $USER
+# logout / login ulang, lalu cek:
+docker --version
+docker compose version
+```
+
+### Catatan penting
+
+- Pastikan Docker Desktop/Engine **sudah Running** sebelum `docker compose up`.
+- Perintah di praktikum ini memakai `docker compose` (plugin v2), bukan `docker-compose` lama.
+- Jika perintah tidak dikenali, tutup dan buka ulang terminal setelah instalasi.
+
 ## Persiapan dan eksekusi
 
 1. Clone repository:
