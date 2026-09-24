@@ -1,0 +1,14 @@
+# Environment
+.env
+
+# Docker volume data
+mysql/data/*
+!mysql/data/.gitkeep
+
+# OS
+.DS_Store
+
+.venv/
+
+generate_latihan.py
+generate_materi.py

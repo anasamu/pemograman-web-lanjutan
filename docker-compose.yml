@@ -1,0 +1,97 @@
+version: '3.9'
+
+services:
+  php:
+    image: php:8.2-apache
+    container_name: web_lanjutan_php
+    restart: unless-stopped
+    working_dir: /var/www/html
+    ports:
+      - "${PHP_PORT:-8080}:80"
+    volumes:
+      - ./php:/var/www/html:rw
+    depends_on:
+      - db
+    environment:
+      APACHE_DOCUMENT_ROOT: /var/www/html
+      MYSQL_HOST: db
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-web_lanjutan}
+      MYSQL_USER: ${MYSQL_USER:-webuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-webpass}
+    command: >
+      bash -c "docker-php-ext-install mysqli pdo pdo_mysql &&
+      a2enmod rewrite &&
+      sed -i 's!/var/www/html!/var/www/html!g' /etc/apache2/sites-available/000-default.conf &&
+      apache2-foreground"
+    networks:
+      - webnet
+
+  db:
+    image: mysql:8.0
+    container_name: web_lanjutan_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-web_lanjutan}
+      MYSQL_USER: ${MYSQL_USER:-webuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-webpass}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql:rw
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - webnet
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: web_lanjutan_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "${PHPMYADMIN_PORT:-8081}:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${MYSQL_USER:-webuser}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-webpass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+    networks:
+      - webnet
+
+  laravel:
+    image: php:8.2-cli
+    container_name: web_lanjutan_laravel
+    restart: unless-stopped
+    working_dir: /app
+    # Jalankan sebagai user host agar file di ./laravel-praktikum tetap bisa diedit dari host
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    ports:
+      - "${LARAVEL_PORT:-8000}:8000"
+    volumes:
+      - ./laravel-praktikum:/app:rw
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_DATABASE: ${MYSQL_DATABASE:-web_lanjutan}
+      DB_USERNAME: ${MYSQL_USER:-webuser}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-webpass}
+      APP_ENV: local
+    command: >
+      bash -c "chmod +x /app/artisan 2>/dev/null || true;
+      if [ -f /app/artisan ]; then
+        php /app/artisan serve --host=0.0.0.0 --port=8000;
+      elif [ -f /app/public/index.php ]; then
+        php -S 0.0.0.0:8000 -t /app/public /app/public/index.php;
+      else
+        echo 'Folder laravel-praktikum kosong. Tambahkan project Laravel atau demo MVC.';
+        sleep infinity;
+      fi"
+    networks:
+      - webnet
+
+networks:
+  webnet:
+    driver: bridge
